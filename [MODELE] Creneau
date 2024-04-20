@@ -1,1 +1,61 @@
+package Modele;
 
+import java.time.LocalDateTime;
+
+public class Creneau {
+    private int id;
+    private LocalDateTime debut;
+    private LocalDateTime fin;
+    private LocalDateTime date;
+    private boolean estLibre;
+
+    // Constructeur
+    public Creneau(int id, LocalDateTime debut, LocalDateTime fin, LocalDateTime date, boolean estLibre) {
+        this.id = id;
+        this.debut = debut;
+        this.fin = fin;
+        this.date = date;
+        this.estLibre = estLibre;
+    }
+
+    // Getters et Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public LocalDateTime getDebut() {
+        return debut;
+    }
+
+    public void setDebut(LocalDateTime debut) {
+        this.debut = debut;
+    }
+
+    public LocalDateTime getFin() {
+        return fin;
+    }
+
+    public void setFin(LocalDateTime fin) {
+        this.fin = fin;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDateTime date) {
+        this.date = date;
+    }
+
+    public boolean isEstLibre() {
+        return estLibre;
+    }
+
+    public void setEstLibre(boolean estLibre) {
+        this.estLibre = estLibre;
+    }
+}
