@@ -1,0 +1,116 @@
+
+CREATE TABLE Medecin (
+    idmedecin INT PRIMARY KEY,
+    nommedecin VARCHAR(255),
+    prenommedecin VARCHAR(255),
+    motdepassemedecin VARCHAR(255),
+    idemploye INT,
+    FOREIGN KEY (idemploye) REFERENCES Employe(Idemploye)
+);
+
+CREATE TABLE Patient (
+    idpatient INT PRIMARY KEY,
+    nompatient VARCHAR(255),
+    prenompatient VARCHAR(255),
+    motdepasse VARCHAR(255),
+    historique TEXT,
+    adressepatient VARCHAR(255),
+);
+
+CREATE TABLE Rendez_vous (
+    idrendezvous INT PRIMARY KEY,
+    date VARCHAR(255),    // modif cdc
+    salle VARCHAR(255),
+    idpatient INT,
+    idmedecin INT,
+    notes TEXT,
+    FOREIGN KEY (idpatient) REFERENCES Patient(idpatient),
+    FOREIGN KEY (idmedecin) REFERENCES Medecin(idmedecin)
+);
+
+CREATE TABLE Employe (
+    idemploye INT PRIMARY KEY
+);
+
+CREATE TABLE Administrateur (
+    idadministrateur INT PRIMARY KEY,
+    idemploye INT,
+    motdepasseadministrateur VARCHAR(255),
+    FOREIGN KEY (idemploye) REFERENCES Employe(Idemploye)
+);
+
+CREATE TABLE Creneau_horaire (
+    idcreneau INT PRIMARY KEY,
+    heure_debut TIME,
+    heure_fin TIME
+);
+----------------------------------------------------------------------------------------------------------------------------------------------
+Remplissage des tables : (copiez et collez 1 par 1)
+
+
+INSERT INTO Employe (idemploye) VALUES   //6 medecins + 6 admin = 12 employés
+(10),
+(11),
+(12),
+(13),
+(14),
+(15),
+(16),
+(17),
+(18),
+(19),
+(20),
+(21);
+
+
+INSERT INTO Medecin (idmedecin, nommedecin, prenommedecin, motdepassemedecin, idemploye, adressemedecin) VALUES
+(1, 'Alpha', 'Jean', 'Jean', 10, 'jean.alpha@gmail.com'),
+(2, 'Beta', 'Sophie', 'Sophie', 11, 'sophie.beta@gmail.com'),
+(3, 'Gamma', 'Pierre', 'Pierre', 12, 'pierre.gamma@gmail.com'),
+(4, 'Delta', 'Marie', 'Marie', 13, 'marie.delta@gmail.com'),
+(5, 'Epsilon', 'Thomas', 'Thomas', 14, 'thomas.epsilon@gmail.com'),
+(6, 'Zeta', 'Emma', 'Emma', 15, 'emma.zeta@gmail.com');
+
+
+
+
+INSERT INTO Administrateur (idadministrateur, idemploye, motdepasseadministrateur) VALUES
+(30, 16),
+(31, 17),
+(32, 18),
+(33, 19),
+(34, 20),
+(35, 21);
+
+
+
+INSERT INTO Patient (idpatient, nompatient, prenompatient, motdepasse, historique, adressepatient) VALUES
+(50, 'Rouge', 'Alice', 'Rouge', 'rouge.Alice@gmail.com', ),
+(51, 'Vert', 'Bob', 'Vert', '','vert.bob@gmail.com'),
+(52, 'Bleu', 'Claire', 'Bleu', '', 'bleu.claire@gmail.com'),
+(53, 'Jaune', 'David', 'Jaune', '', 'jaune.david@gmail.com'),
+(54, 'Rose', 'Fatima', 'Rose', '', 'rose.fatima@gmail.com'),
+(55, 'Violet', 'Fabien', 'Violet', '', 'violet.fatima@gmail.com');
+
+
+INSERT INTO Creneau_horaire (idcreneau, heure_debut, heure_fin) VALUES
+(0809, '08:00:00', '09:00:00'),
+(0910, '09:00:00', '10:00:00'),
+(1011, '10:00:00', '11:00:00'),
+(1112, '11:00:00', '12:00:00'),
+(1213, '12:00:00', '13:00:00'),
+(1314, '13:00:00', '14:00:00');
+
+
+INSERT INTO Rendez_vous (idrendezvous, date, salle, idpatient, idmedecin, notes) VALUES
+(60, '2024-04-10', 'Salle A', NULL, 1, ''),
+(61, '2024-04-12', 'Salle B', NULL, 2, ''),
+(62, '2024-04-15', 'Salle C', NULL, 3, ''),
+(63, '2024-04-17', 'Salle D', NULL, 4, ''),
+(64, '2024-04-20', 'Salle E', NULL, 5, ''),
+(65, '2024-04-22', 'Salle F', NULL, 6, ''),
+(66, '2024-04-25', 'Salle G', NULL, 1, ''),
+(67, '2024-04-27', 'Salle H', NULL, 2, ''),
+(68, '2024-04-30', 'Salle I', NULL, 3, '');
+
+-----------------------------------------------------------------------------------------------------------------------
