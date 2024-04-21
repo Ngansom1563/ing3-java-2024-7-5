@@ -1,1 +1,564 @@
+package Vue.Admin;
+
+import DAO.DbConfigDAO;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.sql.*;
+
+
+public class Ad_medecin extends javax.swing.JFrame {
+
+    PreparedStatement pst;
+    ResultSet rs;
+    Connection con;
+    public Ad_medecin() {
+        super("Historique des medecins");
+        initComponents();
+        table();
+    }
+
+
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jPanel2 = new javax.swing.JPanel();
+        ajouter = new javax.swing.JButton();
+        modifier = new javax.swing.JButton();
+        supprimer = new javax.swing.JButton();
+        actualiser = new javax.swing.JButton();
+        menu = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        txtemail = new javax.swing.JTextField();
+        txtprenom = new javax.swing.JTextField();
+        txtnom = new javax.swing.JTextField();
+        txtspe = new javax.swing.JTextField();
+        txtmdp = new javax.swing.JTextField();
+        txtsalle = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null},
+                        {null, null, null, null}
+                },
+                new String []{
+                }
+        ));
+        jScrollPane1.setViewportView(jTable1);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+
+        ajouter.setFont(new java.awt.Font("Helvetica Neue", 0, 14)); // NOI18N
+        ajouter.setText("Ajouter");
+        ajouter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+
+                try {
+                    String nom = txtnom.getText();
+                    String prenom = txtprenom.getText();
+                    String email = txtemail.getText();
+                    String mdp = txtmdp.getText();
+                    String spe = txtspe.getText();
+                    int sal = Integer.parseInt(txtsalle.getText());
+
+
+
+                    if (txtnom.getText().isEmpty() || txtprenom.getText().isEmpty() || txtemail.getText().isEmpty() || txtmdp.getText().isEmpty() || txtspe.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(Ad_medecin.this, "Champs invalides !");
+                    }
+
+
+                    DbConfigDAO conf = new DbConfigDAO();
+                    try (Connection conn = conf.getConnection();
+                         PreparedStatement pstUtilisateur = conn.prepareStatement("INSERT INTO Utilisateurs (nom, prenom, email, password, type_compte) values (?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+                         PreparedStatement pstMedecin = conn.prepareStatement("INSERT INTO Medecins (id_utilisateur,idMedecin, Specialites, id_salle) VALUES (?,?,?,?)")) {
+
+                        // Remplir les paramètres pour l'insertion dans la table Utilisateurs
+                        pstUtilisateur.setString(1, nom);
+                        pstUtilisateur.setString(2, prenom);
+                        pstUtilisateur.setString(3, email);
+                        pstUtilisateur.setString(4, mdp);
+                        pstUtilisateur.setString(5, "medecin");
+
+                        pstUtilisateur.executeUpdate();
+
+                        // Récupérer l'ID généré pour l'utilisateur nouvellement inséré
+                        ResultSet generatedKeys = pstUtilisateur.getGeneratedKeys();
+                        if (generatedKeys.next()) {
+                            int idUtilisateur = generatedKeys.getInt(1);
+
+                            // Remplir les paramètres pour l'insertion dans la table Patients
+                            pstMedecin.setInt(1, idUtilisateur);
+                            pstMedecin.setInt(2, idUtilisateur);
+                            pstMedecin.setString(3, spe);
+                            pstMedecin.setInt(4, sal);
+
+                            pstMedecin.executeUpdate();
+                            table();
+                        }
+
+                        JOptionPane.showMessageDialog(Ad_medecin.this, "Inscription réussie !", "Succès", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }catch (Exception exception) {
+                    exception.printStackTrace();
+                    JOptionPane.showMessageDialog(Ad_medecin.this, "Erreur lors de l'enregistrement : " + exception.getMessage(), "Erreur de base de données", JOptionPane.ERROR_MESSAGE);
+
+                }}
+
+        });
+
+        modifier.setFont(new java.awt.Font("Helvetica Neue", 0, 14)); // NOI18N
+        modifier.setText("Modifier");
+        modifier.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+                int selectedRow = jTable1.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(null, "Veuillez sélectionner un patient à modifier.");
+                    return;
+                }
+                DbConfigDAO conf = new DbConfigDAO();
+                // Récupérer l'ID utilisateur du patient à partir de la ligne sélectionnée
+                String idUtilisateur = jTable1.getValueAt(selectedRow, 0).toString();
+
+                // Récupérer les nouvelles valeurs à partir des champs de texte
+                String nom = txtnom.getText();
+                String prenom = txtprenom.getText();
+                String email = txtemail.getText();
+                String mdp = txtmdp.getText();
+                String spe = txtspe.getText();
+                int sal = Integer.parseInt(txtsalle.getText());
+
+
+                // Mettre à jour les informations dans la table Utilisateurs
+                String sqlUpdateUtilisateur = "UPDATE Utilisateurs SET nom = ?, prenom = ?, email = ?, password = ? WHERE id_utilisateur = ?";
+                try (Connection conn = conf.getConnection();
+                     PreparedStatement pstUpdateUtilisateur = conn.prepareStatement(sqlUpdateUtilisateur)) {
+                    pstUpdateUtilisateur.setString(1, nom);
+                    pstUpdateUtilisateur.setString(2, prenom);
+                    pstUpdateUtilisateur.setString(3, email);
+                    pstUpdateUtilisateur.setString(4, mdp);
+                    pstUpdateUtilisateur.setString(5, idUtilisateur);
+                    pstUpdateUtilisateur.executeUpdate();
+                } catch (SQLException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erreur lors de la mise à jour des informations dans la table Utilisateurs.");
+                    return;
+                }
+
+                // Mettre à jour les informations dans la table Patients
+                String sqlUpdateMedecin = "UPDATE Medecins SET Specialites = ?, id_salle = ? WHERE id_utilisateur = ?";
+                try (Connection conn = conf.getConnection();
+                     PreparedStatement pstUpdateMedecin = conn.prepareStatement(sqlUpdateMedecin)) {
+                    pstUpdateMedecin.setString(1, spe);
+                    pstUpdateMedecin.setInt(2, sal);
+                    pstUpdateMedecin.setString(3, idUtilisateur);
+                    pstUpdateMedecin.executeUpdate();
+                } catch (SQLException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erreur lors de la mise à jour des informations dans la table Patients.");
+                    return;
+                }
+
+                // Si la mise à jour est réussie dans les deux tables, actualiser le tableau
+                actualiserTableau();
+                JOptionPane.showMessageDialog(null, "Informations du patient mises à jour avec succès.");
+            }
+
+        });
+        supprimer.setFont(new java.awt.Font("Helvetica Neue", 0, 14)); // NOI18N
+        supprimer.setText("Supprimer");
+        supprimer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+                // Récupérer l'index de la ligne sélectionnée dans votre JTable
+                int selectedRow = jTable1.getSelectedRow();
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(null, "Veuillez sélectionner un utilisateur à supprimer.");
+                    return;
+                }
+
+                // Récupérer l'identifiant de l'utilisateur à partir de la ligne sélectionnée
+                String idUtilisateur = jTable1.getValueAt(selectedRow, 0).toString();
+
+                DbConfigDAO conf = new DbConfigDAO();
+
+                // Supprimer l'utilisateur de la table Medecins
+                String sqlDeleteMedecin = "DELETE FROM Medecins WHERE id_utilisateur = ?";
+                try (Connection conn = conf.getConnection();
+                     PreparedStatement pstDeleteMedecin = conn.prepareStatement(sqlDeleteMedecin)) {
+                    pstDeleteMedecin.setString(1, idUtilisateur);
+                    pstDeleteMedecin.executeUpdate();
+                } catch (SQLException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erreur lors de la suppression du médecin.");
+                    return;
+                }
+
+                // Supprimer l'utilisateur de la table Utilisateurs
+                String sqlDeleteUtilisateur = "DELETE FROM Utilisateurs WHERE id_utilisateur = ?";
+
+                try (Connection conn = conf.getConnection();
+                     PreparedStatement pstDeleteUtilisateur = conn.prepareStatement(sqlDeleteUtilisateur)) {
+                    pstDeleteUtilisateur.setString(1, idUtilisateur);
+                    pstDeleteUtilisateur.executeUpdate();
+                } catch (SQLException | ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erreur lors de la suppression de l'utilisateur.");
+                    return;
+                }
+
+                JOptionPane.showMessageDialog(null, "Utilisateur supprimé avec succès.");
+                actualiserTableau();
+            }
+
+        });
+        actualiser.setFont(new java.awt.Font("Helvetica Neue", 0, 14)); // NOI18N
+        actualiser.setText("Actualiser");
+        actualiser.addActionListener(new java.awt.event.ActionListener() {
+                                         public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                             jButton4ActionPerformed(evt);
+                                             txtnom.setText("");
+                                             txtprenom.setText("");
+                                             txtemail.setText("");
+                                             txtmdp.setText("");
+                                             txtspe.setText("");
+                                             txtsalle.setText("");
+
+                                             actualiserTableau();
+                                         }
+                                     });
+        menu.setFont(new java.awt.Font("Helvetica Neue", 0, 14)); // NOI18N
+        menu.setText("Menu");
+        menu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuActionPerformed(evt);
+                dispose();
+                new admin().setVisible(true);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                .addContainerGap(45, Short.MAX_VALUE)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(menu)
+                                        .addComponent(actualiser)
+                                        .addComponent(supprimer)
+                                        .addComponent(modifier)
+                                        .addComponent(ajouter))
+                                .addGap(42, 42, 42))
+        );
+        jPanel2Layout.setVerticalGroup(
+                jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(32, 32, 32)
+                                .addComponent(ajouter)
+                                .addGap(26, 26, 26)
+                                .addComponent(modifier)
+                                .addGap(26, 26, 26)
+                                .addComponent(supprimer)
+                                .addGap(29, 29, 29)
+                                .addComponent(actualiser)
+                                .addGap(67, 67, 67)
+                                .addComponent(menu)
+                                .addContainerGap(100, Short.MAX_VALUE))
+        );
+
+        jLabel1.setFont(new java.awt.Font("Helvetica Neue", 0, 18)); // NOI18N
+        jLabel1.setText("LISTES DE MEDECINS");
+
+        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel2.setText("Nom :");
+
+        jLabel3.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel3.setText("Prenom :");
+
+        jLabel4.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel4.setText("Email :");
+
+        txtemail.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtemailActionPerformed(evt);
+            }
+        });
+
+        txtnom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtnomActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel5.setText("Salle :");
+
+        jLabel6.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel6.setText("Mot de passe :");
+
+        jLabel7.setFont(new java.awt.Font("Helvetica Neue", 0, 16)); // NOI18N
+        jLabel7.setText("Specialite :");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(103, 103, 103))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                .addGap(22, 22, 22)
+                                                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(26, 26, 26)
+                                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addComponent(txtnom, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(txtemail, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                .addGap(14, 14, 14)
+                                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addComponent(txtprenom, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(31, 31, 31)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                                .addComponent(txtspe, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
+                                                                .addComponent(txtsalle, javax.swing.GroupLayout.Alignment.TRAILING))
+                                                        .addComponent(txtmdp, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(16, 16, 16))
+        );
+        jPanel1Layout.setVerticalGroup(
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(44, 44, 44)
+                                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(33, 33, 33)
+                                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(41, 41, 41)
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(txtnom, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                .addGap(35, 35, 35)
+                                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(txtprenom, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                .addComponent(txtmdp, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(40, 40, 40)
+                                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(txtspe, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                .addGap(40, 40, 40)
+                                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                        .addComponent(txtsalle, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(txtemail, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(jLabel4)
+                                                                        .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 356, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>
+
+    private void menuActionPerformed(ActionEvent evt) {
+    }
+
+    private void jButton4ActionPerformed(ActionEvent evt) {
+    }
+
+    private void jButton2ActionPerformed(ActionEvent evt) {
+    }
+
+    private void jButton3ActionPerformed(ActionEvent evt) {
+    }
+
+    private void jButton1ActionPerformed(ActionEvent evt) {
+    }
+
+    private void supprimerActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+    }
+
+    private void txtemailActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+    }
+
+    private void txtnomActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+    }
+
+    public void table(){
+        String []medecin = {"ID","Nom","Prenom","Email","Password","Specialites","Salle"};
+        String [] montrer = new String[8];
+
+        DefaultTableModel model = new DefaultTableModel(null,medecin);
+
+        String sql = "SELECT *\n" +
+                "FROM Utilisateurs U\n" +
+                "JOIN Medecins M ON U.id_utilisateur = M.id_utilisateur;\n";
+
+        try {
+            DbConfigDAO conf = new DbConfigDAO();
+            Connection conn = conf.getConnection();
+
+            Statement st = conn.createStatement();
+            rs = st.executeQuery(sql);
+
+            while(rs.next()){
+                montrer[0] = rs.getString("id_utilisateur");
+                montrer[1] = rs.getString("nom");
+                montrer[2] = rs.getString("prenom");
+                montrer[3] = rs.getString("email");
+                montrer[4] = rs.getString("password");
+                montrer[5] = rs.getString("Specialites");
+                montrer[6] = String.valueOf(rs.getInt("id_Salle"));
+                model.addRow(montrer);
+            }
+            jTable1.setModel(model);
+            conn.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+
+        }
+    }
+
+
+    public void actualiserTableau() {
+        String[] medecin = {"ID", "Nom", "Prenom", "Email", "Password", "Specialites","Salle"};
+        DefaultTableModel model = new DefaultTableModel(null, medecin);
+
+        String sql = "SELECT * FROM Utilisateurs U JOIN Medecins M ON U.id_utilisateur = M.id_utilisateur";
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:8889/RendezVous_Med", "root", "root");
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                String[] row = {
+                        rs.getString("id_utilisateur"),
+                        rs.getString("nom"),
+                        rs.getString("prenom"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getString("Specialites"),
+                        String.valueOf(rs.getInt("id_Salle"))
+                };
+                model.addRow(row);
+            }
+            jTable1.setModel(model);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur lors de la récupération des données.");
+        }
+    }
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Ad_medecin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Ad_medecin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Ad_medecin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Ad_medecin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Ad_medecin().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify
+    private javax.swing.JButton actualiser;
+    private javax.swing.JButton ajouter;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JButton menu;
+    private javax.swing.JButton modifier;
+    private javax.swing.JButton supprimer;
+    private javax.swing.JTextField txtemail;
+    private javax.swing.JTextField txtmdp;
+    private javax.swing.JTextField txtnom;
+    private javax.swing.JTextField txtprenom;
+    private javax.swing.JTextField txtsalle;
+    private javax.swing.JTextField txtspe;
+    // End of variables declaration
+}
 
